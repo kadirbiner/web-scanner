@@ -22,7 +22,7 @@ async def run_command(command: list[str], timeout: int = 120):
         }
 
     except asyncio.TimeoutError:
-        error(f"Komut timeout oldu: {' '.join(command)}")
+        error(f"Timeout: {' '.join(command)}")
         return {
             "command": " ".join(command),
             "returncode": -1,
@@ -31,7 +31,7 @@ async def run_command(command: list[str], timeout: int = 120):
         }
 
     except Exception as e:
-        error(f"Komut çalıştırma hatası: {e}")
+        error(f"Komut hatası: {e}")
         return {
             "command": " ".join(command),
             "returncode": -1,

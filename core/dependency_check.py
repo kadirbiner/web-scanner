@@ -9,7 +9,7 @@ def check_dependencies():
         if shutil.which(tool):
             success(f"{tool} bulundu.")
         else:
-            warning(f"{tool} sistemde bulunamadı.")
+            warning(f"{tool} bulunamadı.")
             missing.append(tool)
 
     return missing

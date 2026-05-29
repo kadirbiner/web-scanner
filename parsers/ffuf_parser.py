@@ -12,6 +12,7 @@ def parse_ffuf_output(raw_output: str):
                 "status": item.get("status", ""),
                 "length": item.get("length", ""),
                 "words": item.get("words", ""),
+                "lines": item.get("lines", ""),
                 "redirect": item.get("redirectlocation", "")
             })
 
