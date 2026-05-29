@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import list, dict, Any
+from typing import Any
+
 
 @dataclass
 class Finding:
@@ -10,16 +11,23 @@ class Finding:
     recommendation: str
     source: str
 
+
 @dataclass
 class ScanContext:
     target: str
-    headers: dict = field(default_factory=dict)
+
+    headers: dict[str, str] = field(default_factory=dict)
+
     technologies: str = ""
     ports: str = ""
-    ffuf_findings: list = field(default_factory=list)
-    robots_entries: list = field(default_factory=list)
-    forms: list = field(default_factory=list)
-    links: list = field(default_factory=list)
-    params: list = field(default_factory=list)
+
+    ffuf_findings: list[dict] = field(default_factory=list)
+    robots_entries: list[dict] = field(default_factory=list)
+
+    forms: list[dict] = field(default_factory=list)
+    links: list[str] = field(default_factory=list)
+    params: list[str] = field(default_factory=list)
+
     findings: list[Finding] = field(default_factory=list)
+
     raw: dict[str, Any] = field(default_factory=dict)
