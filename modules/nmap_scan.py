@@ -1,10 +1,16 @@
 from core.runner import run_command
 
 async def run_nmap(target: str):
-    clean_target = target.replace("http://", "").replace("https://", "").split("/")[0]
+    clean_target = (
+        target
+        .replace("http://", "")
+        .replace("https://", "")
+        .split("/")[0]
+    )
 
     command = [
         "nmap",
+        "-Pn",
         "-sV",
         "-T3",
         clean_target

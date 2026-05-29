@@ -5,5 +5,6 @@ ALLOWED_SCHEMES = ["http://", "https://"]
 REQUIRED_TOOLS = [
     "nmap",
     "whatweb",
-    "httpx"
+    "httpx",
+    "ffuf"
 ]
