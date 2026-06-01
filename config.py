@@ -81,3 +81,12 @@ DEBUG_ERROR_SIGNATURES = [
     "Exception",
     "RuntimeError"
 ]
+
+CRAWLER_MAX_PAGES = 30
+CRAWLER_MAX_DEPTH = 2
+CRAWLER_TIMEOUT = 10
+
+CRAWLER_ALLOWED_CONTENT_TYPES = [
+    "text/html",
+    "application/xhtml+xml"
+]

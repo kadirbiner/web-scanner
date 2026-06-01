@@ -17,10 +17,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = typer.Typer()
 console = Console()
 
+
 def validate_target(target: str):
     if not any(target.startswith(scheme) for scheme in ALLOWED_SCHEMES):
         error("Hedef http:// veya https:// ile başlamalı.")
         raise typer.Exit()
+
 
 def print_recon_summary(context):
     console.print("\n[bold cyan]Recon Özeti[/bold cyan]")
@@ -35,17 +37,35 @@ def print_recon_summary(context):
     table.add_row("Links Found", str(len(context.links)))
     table.add_row("Forms Found", str(len(context.forms)))
     table.add_row("Params Found", str(len(context.params)))
+    table.add_row("Crawled Pages", str(len(context.crawled_pages)))
     table.add_row("FFUF Findings", str(len(context.ffuf_findings)))
 
     console.print(table)
 
-def print_ports(context):
-    console.print("\n[bold cyan]Nmap Çıktısı[/bold cyan]")
-    console.print(context.ports or "Nmap çıktısı yok.")
 
-def print_technologies(context):
-    console.print("\n[bold cyan]WhatWeb Çıktısı[/bold cyan]")
-    console.print(context.technologies or "WhatWeb çıktısı yok.")
+def print_crawler(context):
+    console.print("\n[bold cyan]Crawler Engine[/bold cyan]")
+
+    table = Table(title="Crawled Pages")
+    table.add_column("Status", style="cyan")
+    table.add_column("Depth", style="yellow")
+    table.add_column("URL", style="green")
+    table.add_column("Links", style="magenta")
+    table.add_column("Forms", style="blue")
+    table.add_column("Params", style="red")
+
+    for page in context.crawled_pages:
+        table.add_row(
+            str(page.get("status", "")),
+            str(page.get("depth", "")),
+            str(page.get("url", "")),
+            str(page.get("links_found", "")),
+            str(page.get("forms_found", "")),
+            str(page.get("params_found", ""))
+        )
+
+    console.print(table)
+
 
 def print_ffuf(context):
     console.print("\n[bold cyan]Discovery / FFUF[/bold cyan]")
@@ -65,6 +85,7 @@ def print_ffuf(context):
         )
 
     console.print(table)
+
 
 def print_findings(context):
     console.print("\n[bold red]Findings Engine[/bold red]")
@@ -87,6 +108,15 @@ def print_findings(context):
 
     console.print(table)
 
+
+def print_raw(context):
+    console.print("\n[bold cyan]Nmap Çıktısı[/bold cyan]")
+    console.print(context.ports or "Nmap çıktısı yok.")
+
+    console.print("\n[bold cyan]WhatWeb Çıktısı[/bold cyan]")
+    console.print(context.technologies or "WhatWeb çıktısı yok.")
+
+
 @app.callback(invoke_without_command=True)
 def main(
     target: str = typer.Argument(None),
@@ -99,7 +129,7 @@ def main(
         raise typer.Exit()
 
     console.print(Panel.fit(
-        "[bold cyan]Automated CTF Web Scanner V2[/bold cyan]\nRecon + Discovery + Passive Analysis + Safe Signals",
+        "[bold cyan]Automated CTF Web Scanner V2[/bold cyan]\nRecon + Discovery + Crawler + Passive Analysis + Safe Signals",
         border_style="cyan"
     ))
 
@@ -116,14 +146,15 @@ def main(
     context = asyncio.run(start_scan(target, ffuf_mode=mode))
 
     print_recon_summary(context)
+    print_crawler(context)
     print_ffuf(context)
     print_findings(context)
 
     if show_raw:
-        print_ports(context)
-        print_technologies(context)
+        print_raw(context)
 
     success("Scanner V2 başarıyla tamamlandı.")
+
 
 if __name__ == "__main__":
     app()

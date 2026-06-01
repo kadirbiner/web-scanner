@@ -8,8 +8,10 @@ from modules.recon_nmap import run_nmap
 from modules.recon_whatweb import run_whatweb
 from modules.discovery_robots import run_robots_discovery
 from modules.discovery_ffuf import run_ffuf
+from modules.crawler_engine import run_crawler
 from modules.passive_analyzer import run_passive_analysis
 from modules.safe_signals import run_safe_signals
+
 
 async def start_scan(target: str, ffuf_mode: str = "small"):
     context = ScanContext(target=target)
@@ -27,6 +29,10 @@ async def start_scan(target: str, ffuf_mode: str = "small"):
     await asyncio.gather(*recon_tasks)
 
     success("Recon ve discovery tamamlandı.")
+
+    info("Crawler Engine başlatıldı.")
+    context = run_crawler(context)
+    success("Crawler Engine tamamlandı.")
 
     info("Passive analysis başlatıldı.")
     context = run_passive_analysis(context)

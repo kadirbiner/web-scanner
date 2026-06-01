@@ -28,6 +28,8 @@ class ScanContext:
     links: list[str] = field(default_factory=list)
     params: list[str] = field(default_factory=list)
 
+    crawled_pages: list[dict] = field(default_factory=list)
+
     findings: list[Finding] = field(default_factory=list)
 
     raw: dict[str, Any] = field(default_factory=dict)

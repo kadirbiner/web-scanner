@@ -3,6 +3,7 @@ from core.findings import add_finding
 from parsers.ffuf_parser import parse_ffuf_output
 from parsers.html_parser import parse_links_forms_params
 
+
 def analyze_security_headers(context):
     for header in SECURITY_HEADERS:
         if header not in context.headers:
@@ -15,6 +16,7 @@ def analyze_security_headers(context):
                 recommendation=f"{header} güvenlik başlığını yapılandır.",
                 source="Passive Analysis"
             )
+
 
 def analyze_ffuf(context):
     raw = context.raw.get("ffuf", {}).get("stdout", "")
@@ -30,10 +32,10 @@ def analyze_ffuf(context):
             title = "Interesting Endpoint Found"
             recommendation = "Endpoint erişimi ve içerik sızıntısı kontrol edilmeli."
 
-            if any(x in url for x in [".git", ".env", "backup", "db.sql", "dump", "config"]):
+            if any(x in url for x in [".git", ".env", "backup", "db.sql", "dump", "config", "server-status", "phpinfo"]):
                 severity = "HIGH"
-                title = "Potential Sensitive File or Backup Exposure"
-                recommendation = "Hassas dosyalar web root dışına alınmalı veya erişim engellenmeli."
+                title = "Potential Sensitive Endpoint or File Exposure"
+                recommendation = "Hassas endpoint/dosyalar web root dışına alınmalı veya erişim engellenmeli."
 
             add_finding(
                 context=context,
@@ -56,6 +58,7 @@ def analyze_ffuf(context):
                 source="Discovery / FFUF"
             )
 
+
 def analyze_html(context):
     html = context.raw.get("homepage_body", "")
 
@@ -64,11 +67,12 @@ def analyze_html(context):
 
     parsed = parse_links_forms_params(context.target, html)
 
-    context.links = parsed["links"]
-    context.forms = parsed["forms"]
-    context.params = parsed["params"]
+    # Önemli: Crawler verilerini ezme, birleştir.
+    context.links = list(set(context.links + parsed["links"]))
+    context.forms = context.forms + parsed["forms"]
+    context.params = list(set(context.params + parsed["params"]))
 
-    for form in context.forms:
+    for form in parsed["forms"]:
         add_finding(
             context=context,
             title="Form Detected",
@@ -79,7 +83,7 @@ def analyze_html(context):
             source="Passive Analysis"
         )
 
-    for param in context.params:
+    for param in parsed["params"]:
         add_finding(
             context=context,
             title="URL/Form Parameter Detected",
@@ -89,6 +93,7 @@ def analyze_html(context):
             recommendation="Parametreler güvenli doğrulama ve encoding ile işlenmeli.",
             source="Passive Analysis"
         )
+
 
 def analyze_robots(context):
     for item in context.robots_entries:
@@ -101,6 +106,7 @@ def analyze_robots(context):
             recommendation="Hassas yollar robots.txt içinde ifşa edilmemeli.",
             source="Passive Analysis"
         )
+
 
 def run_passive_analysis(context):
     analyze_security_headers(context)

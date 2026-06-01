@@ -1,2 +1,5 @@
 rich
 typer
+requests
+beautifulsoup4
+urllib3
