@@ -2,7 +2,7 @@ import asyncio
 
 from core.models import ScanContext
 from utils.logger import info, success
-
+from modules.parameter_analyzer import run_parameter_analysis
 from modules.recon_headers import run_header_recon
 from modules.recon_nmap import run_nmap
 from modules.recon_whatweb import run_whatweb
@@ -36,6 +36,10 @@ async def start_scan(target: str, ffuf_mode: str = "small"):
 
     info("Passive analysis başlatıldı.")
     context = run_passive_analysis(context)
+
+    info("Parametre analiz motoru başlatıldı.")
+    context = run_parameter_analysis(context)
+    success("Parametre analiz motoru tamamlandı.")
 
     info("Safe vuln signals başlatıldı.")
     context = run_safe_signals(context)

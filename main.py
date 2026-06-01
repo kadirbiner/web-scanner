@@ -17,6 +17,30 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = typer.Typer()
 console = Console()
 
+def print_parameter_analysis(context):
+    console.print("\n[bold cyan]Parameter Analyzer[/bold cyan]")
+
+    table = Table(title="Parameter Analysis")
+    table.add_column("Parameter", style="cyan")
+    table.add_column("Categories", style="yellow")
+    table.add_column("URL Count", style="green")
+    table.add_column("Example URL", style="magenta")
+
+    analysis = context.raw.get("parameter_analysis", {})
+
+    for param, data in analysis.items():
+        urls = data.get("urls", [])
+        categories = data.get("categories", [])
+
+        table.add_row(
+            param,
+            ", ".join(categories) if categories else "GENERAL",
+            str(len(urls)),
+            urls[0] if urls else ""
+        )
+
+    console.print(table)
+
 
 def validate_target(target: str):
     if not any(target.startswith(scheme) for scheme in ALLOWED_SCHEMES):
@@ -148,6 +172,7 @@ def main(
     print_recon_summary(context)
     print_crawler(context)
     print_ffuf(context)
+    print_parameter_analysis(context)
     print_findings(context)
 
     if show_raw:
