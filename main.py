@@ -1,4 +1,5 @@
 import asyncio
+from multiprocessing import context
 import typer
 import urllib3
 
@@ -110,6 +111,29 @@ def print_ffuf(context):
 
     console.print(table)
 
+def print_arjun(context):
+    console.print("\n[bold cyan]Arjun Parameter Discovery[/bold cyan]")
+
+    table = Table(title="Arjun Results")
+    table.add_column("URL", style="green")
+    table.add_column("Status", style="cyan")
+    table.add_column("Output Size", style="yellow")
+
+    arjun_results = context.raw.get("arjun", {})
+
+    if not arjun_results:
+        console.print("[yellow]Arjun sonucu yok veya hedef bulunamadı.[/yellow]")
+        return
+
+    for url, result in arjun_results.items():
+        table.add_row(
+            url,
+            str(result.get("returncode", "")),
+            str(len(result.get("stdout", "")))
+        )
+
+    console.print(table)
+
 
 def print_findings(context):
     console.print("\n[bold red]Findings Engine[/bold red]")
@@ -172,6 +196,7 @@ def main(
     print_recon_summary(context)
     print_crawler(context)
     print_ffuf(context)
+    print_arjun(context)
     print_parameter_analysis(context)
     print_findings(context)
 

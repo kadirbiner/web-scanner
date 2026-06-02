@@ -9,9 +9,9 @@ REQUIRED_TOOLS = [
     "nmap",
     "whatweb",
     "ffuf",
-    "curl"
+    "curl",
+    "arjun"
 ]
-
 WORDLISTS = {
     "small": "/usr/share/wordlists/dirb/common.txt",
     "medium": "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",
@@ -85,6 +85,8 @@ DEBUG_ERROR_SIGNATURES = [
 CRAWLER_MAX_PAGES = 30
 CRAWLER_MAX_DEPTH = 2
 CRAWLER_TIMEOUT = 10
+ARJUN_MAX_URLS = 10
+ARJUN_TIMEOUT = 120
 
 CRAWLER_ALLOWED_CONTENT_TYPES = [
     "text/html",

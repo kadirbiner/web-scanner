@@ -11,6 +11,7 @@ from modules.discovery_ffuf import run_ffuf
 from modules.crawler_engine import run_crawler
 from modules.passive_analyzer import run_passive_analysis
 from modules.safe_signals import run_safe_signals
+from modules.arjun_discovery import run_arjun_discovery
 
 
 async def start_scan(target: str, ffuf_mode: str = "small"):
@@ -36,6 +37,10 @@ async def start_scan(target: str, ffuf_mode: str = "small"):
 
     info("Passive analysis başlatıldı.")
     context = run_passive_analysis(context)
+
+    info("Arjun parametre keşfi başlatıldı.")
+    context = await run_arjun_discovery(context)
+    success("Arjun parametre keşfi tamamlandı.")
 
     info("Parametre analiz motoru başlatıldı.")
     context = run_parameter_analysis(context)

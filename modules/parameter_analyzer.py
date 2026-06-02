@@ -1,5 +1,6 @@
 from urllib.parse import urlparse, parse_qs
 from core.findings import add_finding
+from parsers.arjun_parser import parse_arjun_json
 
 
 PARAMETER_RULES = {
@@ -25,6 +26,24 @@ PARAMETER_RULES = {
     ]
 }
 
+
+def collect_parameters_from_arjun(context):
+    parameter_map = {}
+
+    arjun_results = context.raw.get("arjun", {})
+
+    for target_url, result in arjun_results.items():
+        raw_output = result.get("stdout", "")
+        parsed = parse_arjun_json(raw_output)
+
+        for url, params in parsed.items():
+            for param in params:
+                if param not in parameter_map:
+                    parameter_map[param] = set()
+
+                parameter_map[param].add(url)
+
+    return parameter_map
 
 def classify_parameter(param_name: str):
     param = param_name.lower()
@@ -64,6 +83,17 @@ def collect_parameters_from_links(context):
 
 
 def run_parameter_analysis(context):
+    parameter_map = collect_parameters_from_links(context)
+
+    arjun_map = collect_parameters_from_arjun(context)
+
+    for param, urls in arjun_map.items():
+        if param not in parameter_map:
+            parameter_map[param] = set()
+
+        parameter_map[param].update(urls)
+
+    context.raw["parameter_analysis"] = {}
     parameter_map = collect_parameters_from_links(context)
 
     context.raw["parameter_analysis"] = {}
