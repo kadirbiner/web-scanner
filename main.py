@@ -1,5 +1,4 @@
 import asyncio
-from multiprocessing import context
 import typer
 import urllib3
 
@@ -17,30 +16,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = typer.Typer()
 console = Console()
-
-def print_parameter_analysis(context):
-    console.print("\n[bold cyan]Parameter Analyzer[/bold cyan]")
-
-    table = Table(title="Parameter Analysis")
-    table.add_column("Parameter", style="cyan")
-    table.add_column("Categories", style="yellow")
-    table.add_column("URL Count", style="green")
-    table.add_column("Example URL", style="magenta")
-
-    analysis = context.raw.get("parameter_analysis", {})
-
-    for param, data in analysis.items():
-        urls = data.get("urls", [])
-        categories = data.get("categories", [])
-
-        table.add_row(
-            param,
-            ", ".join(categories) if categories else "GENERAL",
-            str(len(urls)),
-            urls[0] if urls else ""
-        )
-
-    console.print(table)
 
 
 def validate_target(target: str):
@@ -111,25 +86,59 @@ def print_ffuf(context):
 
     console.print(table)
 
+
 def print_arjun(context):
     console.print("\n[bold cyan]Arjun Parameter Discovery[/bold cyan]")
 
-    table = Table(title="Arjun Results")
-    table.add_column("URL", style="green")
-    table.add_column("Status", style="cyan")
-    table.add_column("Output Size", style="yellow")
-
     arjun_results = context.raw.get("arjun", {})
+    discovered = context.raw.get("arjun_discovered", {})
 
     if not arjun_results:
         console.print("[yellow]Arjun sonucu yok veya hedef bulunamadı.[/yellow]")
         return
 
+    table = Table(title="Arjun Results")
+    table.add_column("URL", style="green")
+    table.add_column("Status", style="cyan")
+    table.add_column("Parameters", style="yellow")
+
     for url, result in arjun_results.items():
+        params = discovered.get(url, [])
+
+        if not params:
+            param_text = "-"
+        else:
+            param_text = ", ".join(params[:8])
+
         table.add_row(
             url,
             str(result.get("returncode", "")),
-            str(len(result.get("stdout", "")))
+            param_text
+        )
+
+    console.print(table)
+
+
+def print_parameter_analysis(context):
+    console.print("\n[bold cyan]Parameter Analyzer[/bold cyan]")
+
+    table = Table(title="Parameter Analysis")
+    table.add_column("Parameter", style="cyan")
+    table.add_column("Categories", style="yellow")
+    table.add_column("URL Count", style="green")
+    table.add_column("Example URL", style="magenta")
+
+    analysis = context.raw.get("parameter_analysis", {})
+
+    for param, data in analysis.items():
+        urls = data.get("urls", [])
+        categories = data.get("categories", [])
+
+        table.add_row(
+            param,
+            ", ".join(categories) if categories else "GENERAL",
+            str(len(urls)),
+            urls[0] if urls else ""
         )
 
     console.print(table)

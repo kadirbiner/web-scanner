@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from core.runner import run_command
 from config import ARJUN_MAX_URLS, ARJUN_TIMEOUT
+from parsers.arjun_parser import parse_arjun_json
 
 
 def is_interesting_url(url: str) -> bool:
@@ -25,10 +26,7 @@ def is_interesting_url(url: str) -> bool:
         ".php", ".asp", ".aspx", ".jsp", ".do", ".action"
     ]
 
-    if any(path.endswith(ext) for ext in interesting_extensions):
-        return True
-
-    return False
+    return any(path.endswith(ext) for ext in interesting_extensions)
 
 
 def build_arjun_targets(context):
@@ -46,37 +44,24 @@ def build_arjun_targets(context):
     return list(targets)[:ARJUN_MAX_URLS]
 
 
-def parse_arjun_output(raw_output: str):
+def extract_discovered_parameters(context):
     discovered = {}
 
-    try:
-        data = json.loads(raw_output)
+    arjun_results = context.raw.get("arjun", {})
 
-        for url, value in data.items():
-            params = []
+    for target_url, result in arjun_results.items():
+        raw_output = result.get("stdout", "")
+        parsed = parse_arjun_json(raw_output)
 
-            if isinstance(value, dict):
-                params = value.get("params", [])
+        params = []
 
-            elif isinstance(value, list):
-                params = value
+        for _, found_params in parsed.items():
+            params.extend(found_params)
 
-            discovered[url] = params
+        discovered[target_url] = sorted(list(set(params)))
 
-    except Exception:
-        for line in raw_output.splitlines():
-            line = line.strip()
-
-            if not line:
-                continue
-
-            if "Parameters found:" in line:
-                continue
-
-            if line.startswith("[") or line.startswith("{"):
-                continue
-
-    return discovered
+    context.raw["arjun_discovered"] = discovered
+    return context
 
 
 async def run_arjun_discovery(context):
@@ -93,7 +78,8 @@ async def run_arjun_discovery(context):
         ]
 
         result = await run_command(command, timeout=ARJUN_TIMEOUT)
-
         context.raw["arjun"][target] = result
+
+    context = extract_discovered_parameters(context)
 
     return context
